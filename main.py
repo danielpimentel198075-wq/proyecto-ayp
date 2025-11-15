@@ -1,11 +1,11 @@
 # main.py
 
-from Proyecto.sistema import SistemaHotDog
+from sistema import SistemaHotDog
 
 if __name__ == "__main__":
     # Aquí usas las URLs de tu repo en GitHub
     USERNAME = "FernandoSapient"
-    REPOSITORY = "BTPSD05_2526-1"
+    REPOSITORY = "BPTSP05_2526-1"
     BRANCH = "main"
     MENU_PATH = "menu.json"
     ING_PATH = "ingredientes.json"

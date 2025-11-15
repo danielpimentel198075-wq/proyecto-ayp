@@ -1,6 +1,6 @@
 # gestores.py
 
-from Proyecto.modelos import Ingrediente, Inventario, HotDog
+from modelos import Ingrediente, Inventario, HotDog
 
 class GestorIngredientes:
     """
@@ -32,34 +32,85 @@ class GestorIngredientes:
         return self.ingredientes.get(id_ingrediente)
 
 
+# (En gestores.py)
+
 class GestorInventario:
     """
     Módulo de Gestión de Inventario.
     """
     def __init__(self, inventario, gestor_ingredientes):
-        self.inventario = inventario                # objeto Inventario
-        self.gestor_ingredientes = gestor_ingredientes  # para validar ids
+        self.inventario = inventario  # Objeto Inventario
+        self.gestor_ingredientes = gestor_ingredientes
 
-    def ver_todo(self):
+    def inicializar_inventario_con_cero(self):
         """
-        Devuelve lista de tuplas (Ingrediente, cantidad).
+        Asegura que todos los ingredientes de la API existan en el inventario,
+        al menos con 0 existencias. No sobrescribe si ya hay un valor.
         """
-        resultado = []
-        for id_ing, cant in self.inventario.existencias.items():
-            ing = self.gestor_ingredientes.obtener_por_id(id_ing)
-            resultado.append((ing, cant))
-        return resultado
+        todos_los_ing_ids = self.gestor_ingredientes.ingredientes.keys()
+        for id_ing in todos_los_ing_ids:
+            # Si el ingrediente no está en existencias, lo añade con 0
+            if self.inventario.obtener_cantidad(id_ing) == 0 and id_ing not in self.inventario.existencias:
+                 self.inventario.set_cantidad(id_ing, 0)
 
     def buscar_existencia(self, id_ingrediente):
+        """
+        Devuelve la cantidad de un ingrediente.
+        """
         return self.inventario.obtener_cantidad(id_ingrediente)
 
-    def actualizar_existencia(self, id_ingrediente, nueva_cantidad):
-        # TODO: validar que el ingrediente exista
-        if self.gestor_ingredientes.obtener_por_id(id_ingrediente) is None:
-            # aquí luego el Sistema imprimirá un mensaje de error
+    def restar_existencia(self, id_ingrediente, cantidad):
+        """
+        Resta stock de un ingrediente (usado para ventas).
+        Devuelve True/False si fue exitoso.
+        """
+        # Usamos el método de la clase Inventario
+        return self.inventario.restar_cantidad(id_ingrediente, cantidad)
+
+    def agregar_existencia(self, id_ingrediente, cantidad):
+        """
+        Agrega stock a un ingrediente (usado para reponer).
+        """
+        # Usamos el método de la clase Inventario
+        return self.inventario.agregar_cantidad(id_ingrediente, cantidad)
+    
+    def set_existencia_total(self, id_ingrediente, cantidad):
+        """
+        Establece el stock total de un ingrediente (usado por el admin).
+        Devuelve True/False si fue exitoso (False si el ingrediente no existe).
+        """
+        # Verificamos que el ingrediente exista en la base de datos
+        if not self.gestor_ingredientes.obtener_por_id(id_ingrediente):
             return False
-        self.inventario.actualizar_cantidad(id_ingrediente, nueva_cantidad)
-        return True
+            
+        return self.inventario.set_cantidad(id_ingrediente, cantidad)
+
+    def obtener_inventario_completo(self):
+        """
+        Devuelve una lista de tuplas (Ingrediente, cantidad)
+        para todos los ingredientes en el inventario.
+        """
+        lista_inventario = []
+        # Iteramos sobre las existencias {id: cant} del inventario
+        for id_ing, cantidad in self.inventario.existencias.items():
+            # Buscamos el objeto Ingrediente completo
+            ing = self.gestor_ingredientes.obtener_por_id(id_ing)
+            if ing:
+                lista_inventario.append((ing, cantidad))
+        # Ordenamos por categoría y luego por nombre
+        lista_inventario.sort(key=lambda item: (item[0].categoria, item[0].nombre))
+        return lista_inventario
+
+    def obtener_inventario_bajo_stock(self, umbral=10):
+        """
+        Devuelve una lista de (Ingrediente, cantidad) para
+        items con stock <= umbral.
+        """
+        lista_bajos = []
+        for ing, cantidad in self.obtener_inventario_completo():
+            if cantidad <= umbral:
+                lista_bajos.append((ing, cantidad))
+        return lista_bajos
 
 
 class GestorMenu:

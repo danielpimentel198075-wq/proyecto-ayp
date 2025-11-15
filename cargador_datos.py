@@ -2,7 +2,8 @@
 
 import requests
 import json
-from Proyecto.modelos import Ingrediente, HotDog
+# Asegúrate que la ruta de importación sea correcta según tu estructura
+from modelos import Ingrediente, HotDog 
 
 class CargadorDatos:
     """
@@ -15,49 +16,107 @@ class CargadorDatos:
     def cargar_ingredientes_desde_api(self):
         """
         Lee el JSON de ingredientes desde GitHub y devuelve
-        un dict {id: Ingrediente}.
+        un dict {nombre_ingrediente: Objeto_Ingrediente}.
         """
-        resp = requests.get(self.url_ingredientes)
-        data = resp.json()
+        try:
+            resp = requests.get(self.url_ingredientes)
+            resp.raise_for_status() # Lanza un error si la petición falla (ej. 404)
+            data_categorias = resp.json()
+        except requests.exceptions.RequestException as e:
+            print(f"Error fatal al cargar ingredientes desde la API: {e}")
+            return {}
+        except json.JSONDecodeError:
+            print(f"Error fatal: La respuesta de ingredientes no es un JSON válido.")
+            return {}
 
-        ingredientes = {}
-        # TODO: adapta esto a la estructura real del JSON
-        for item in data:
-            ing = Ingrediente(
-                id_=item["id"],
-                nombre=item["nombre"],
-                categoria=item["categoria"],
-                tipo=item["tipo"],
-                longitud=item.get("longitud")
-            )
-            ingredientes[ing.id] = ing
+        ingredientes_db = {}
+        
+        # El JSON es una lista de categorías (Pan, Salchicha, etc.)
+        for categoria_data in data_categorias:
+            categoria_nombre = categoria_data["Categoria"]
+            
+            # Iteramos sobre las opciones dentro de esa categoría
+            for item in categoria_data["Opciones"]:
+                # Usamos el 'nombre' como ID, ya que así viene en el JSON
+                id_ = item["nombre"]
+                nombre = item["nombre"]
+                
+                # El 'tipo' varía (a veces es 'tipo', a veces 'base' para salsas)
+                tipo = item.get("tipo", item.get("base"))
+                
+                # La 'longitud' solo existe para Pan y Salchicha (usa 'tamaño')
+                longitud = item.get("tamaño")
 
-        return ingredientes
+                ing = Ingrediente(
+                    id_=id_,
+                    nombre=nombre,
+                    categoria=categoria_nombre,
+                    tipo=tipo,
+                    longitud=longitud
+                )
+                ingredientes_db[ing.id] = ing
 
-    def cargar_menu_desde_api(self, ingredientes):
+        return ingredientes_db
+
+    def cargar_menu_desde_api(self, ingredientes_db):
         """
         Lee el JSON del menú desde GitHub y devuelve
-        un dict {id: HotDog} usando el dict de ingredientes.
+        un dict {nombre_hotdog: Objeto_HotDog}.
+        
+        Usa el 'ingredientes_db' (creado antes) para enlazar 
+        los nombres de ingredientes con los objetos Ingrediente.
         """
-        resp = requests.get(self.url_menu)
-        data = resp.json()
+        try:
+            resp = requests.get(self.url_menu)
+            resp.raise_for_status()
+            data_menu = resp.json()
+        except requests.exceptions.RequestException as e:
+            print(f"Error fatal al cargar menú desde la API: {e}")
+            return {}
+        except json.JSONDecodeError:
+            print(f"Error fatal: La respuesta del menú no es un JSON válido.")
+            return {}
 
         hotdogs = {}
-        # TODO: Aquí usas los IDs de ingredientes que vengan en el JSON de menú
-        # para armar los objetos HotDog. Algo tipo:
-        #
-        # for item in data:
-        #     pan = ingredientes[item["id_pan"]]
-        #     salchicha = ingredientes[item["id_salchicha"]]
-        #     toppings = [ingredientes[id_] for id_ in item["toppings"]]
-        #     salsas = [ingredientes[id_] for id_ in item["salsas"]]
-        #     ...
-        #
-        #     hd = HotDog(...)
-        #     hotdogs[hd.id] = hd
-        #
-        return hotdogs
 
-    # Más adelante puedes agregar:
-    # - cargar_estado_local()
-    # - guardar_estado_local()
+        # El JSON es una lista de hot dogs
+        for item in data_menu:
+            id_ = item["nombre"]
+            nombre = item["nombre"]
+
+            try:
+                # 1. Buscamos el OBJETO Ingrediente usando el nombre (string)
+                pan = ingredientes_db[item["Pan"]]
+                salchicha = ingredientes_db[item["Salchicha"]]
+
+                # 2. Manejamos las listas de toppings y salsas
+                # (convertimos lista de strings a lista de Objetos)
+                toppings = [ingredientes_db[t] for t in item["toppings"]]
+                
+                # 3. Manejamos la inconsistencia 'salsas' vs 'Salsas'
+                lista_salsas_nombres = item.get("salsas", item.get("Salsas", []))
+                salsas = [ingredientes_db[s] for s in lista_salsas_nombres]
+
+                # 4. Manejamos el acompañante (puede ser None/null)
+                acompanante_nombre = item["Acompañante"]
+                acompanante = ingredientes_db.get(acompanante_nombre) if acompanante_nombre else None
+
+                # 5. Creamos el objeto HotDog
+                hd = HotDog(
+                    id_=id_,
+                    nombre=nombre,
+                    pan=pan,
+                    salchicha=salchicha,
+                    toppings=toppings,
+                    salsas=salsas,
+                    acompanante=acompanante
+                )
+                hotdogs[hd.id] = hd
+
+            except KeyError as e:
+                # Este error saltará si menu.json pide un ingrediente 
+                # que no existe en ingredientes.json (ej. "Pan": "baguette")
+                print(f"Advertencia: No se pudo crear el hot dog '{nombre}'.")
+                print(f"Motivo: El ingrediente '{e.args[0]}' no se encuentra en ingredientes.json.")
+
+        return hotdogs

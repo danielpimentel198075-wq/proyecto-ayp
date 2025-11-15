@@ -50,11 +50,38 @@ class Inventario:
         self.existencias = {}
 
     def obtener_cantidad(self, id_ingrediente):
+        """
+        Devuelve la cantidad de un ingrediente. Si no existe, devuelve 0.
+        """
         return self.existencias.get(id_ingrediente, 0)
 
-    def actualizar_cantidad(self, id_ingrediente, nueva_cantidad):
-        self.existencias[id_ingrediente] = nueva_cantidad
+    def set_cantidad(self, id_ingrediente, cantidad):
+        """
+        Establece la cantidad total de un ingrediente.
+        """
+        if cantidad < 0:
+            cantidad = 0
+        self.existencias[id_ingrediente] = cantidad
+        return True
 
-    def agregar(self, id_ingrediente, cantidad):
-        actual = self.obtener_cantidad(id_ingrediente)
-        self.existencias[id_ingrediente] = actual + cantidad
+    def restar_cantidad(self, id_ingrediente, cantidad_a_restar):
+        """
+        Resta una cantidad del stock. Devuelve False si no hay suficiente.
+        """
+        cantidad_actual = self.obtener_cantidad(id_ingrediente)
+        if cantidad_actual < cantidad_a_restar:
+            return False # No hay suficiente stock
+        
+        self.existencias[id_ingrediente] = cantidad_actual - cantidad_a_restar
+        return True
+
+    def agregar_cantidad(self, id_ingrediente, cantidad_a_agregar):
+        """
+        Agrega una cantidad al stock existente.
+        """
+        if cantidad_a_agregar < 0:
+            return False # No se puede agregar negativo
+            
+        cantidad_actual = self.obtener_cantidad(id_ingrediente)
+        self.existencias[id_ingrediente] = cantidad_actual + cantidad_a_agregar
+        return True
