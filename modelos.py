@@ -40,6 +40,20 @@ class HotDog:
     def __str__(self):
         return f"HotDog #{self.id}: {self.nombre}"
 
+    def to_dict(self):
+        """
+        Convierte el objeto HotDog a un diccionario simple (serializable a JSON),
+        usando los 'nombres' (IDs) de los ingredientes.
+        """
+        return {
+            "nombre": self.nombre,
+            "Pan": self.pan.id,
+            "Salchicha": self.salchicha.id,
+            "toppings": [t.id for t in self.toppings],
+            "salsas": [s.id for s in self.salsas],
+            "Acompañante": self.acompanante.id if self.acompanante else None
+        }
+
 
 class Inventario:
     """
