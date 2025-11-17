@@ -1,0 +1,211 @@
+{
+    "inventario": {
+        "simple": 94,
+        "integral": 62,
+        "especial": 0,
+        "grande": 0,
+        "italiano": 0,
+        "sin gluten": 0,
+        "saludable": 0,
+        "gigante": 0,
+        "submarino": 0,
+        "weiner": 12,
+        "breakfast": 62,
+        "alemana": 0,
+        "francesa": 0,
+        "polaca": 0,
+        "light": 0,
+        "boudin": 0,
+        "vienna": 0,
+        "salicce": 0,
+        "saladas pequeñas": 0,
+        "saladas medianas": 0,
+        "saladas grandes": 0,
+        "doradas con queso pequeñas": 0,
+        "doradas con queso medianas": 0,
+        "doradas con queso grandes": 0,
+        "Super papas": 0,
+        "Papas": 5,
+        "Cola Negra": 0,
+        "Kolita": 0,
+        "Té helado": 0,
+        "Naranjada": 0,
+        "Limonada": 0,
+        "Manzana": 0,
+        "Naranja": 0,
+        "Pera": 0,
+        "No vendemos alcohol": 0,
+        "ketchup": 0,
+        "mayonesa": 0,
+        "BBQ": 0,
+        "mostaza": 0,
+        "relish": 5,
+        "tomate": 0,
+        "cebolla": 5,
+        "repollo": 0,
+        "cilantro": 0,
+        "papitas": 0,
+        "nuez moscada": 0
+    },
+    "hotdogs_locales": [
+        {
+            "nombre": "simple",
+            "Pan": "simple",
+            "Salchicha": "weiner",
+            "toppings": [],
+            "salsas": [],
+            "Acompañante": null
+        },
+        {
+            "nombre": "inglés",
+            "Pan": "integral",
+            "Salchicha": "breakfast",
+            "toppings": [
+                "cebolla"
+            ],
+            "salsas": [
+                "relish"
+            ],
+            "Acompañante": "Papas"
+        },
+        {
+            "nombre": "lederhosen",
+            "Pan": "grande",
+            "Salchicha": "alemana",
+            "toppings": [
+                "cebolla",
+                "repollo",
+                "cilantro",
+                "papitas"
+            ],
+            "salsas": [
+                "ketchup",
+                "BBQ",
+                "mostaza",
+                "relish"
+            ],
+            "Acompañante": "No vendemos alcohol"
+        },
+        {
+            "nombre": "bonjour",
+            "Pan": "especial",
+            "Salchicha": "francesa",
+            "toppings": [
+                "tomate",
+                "cilantro",
+                "nuez moscada"
+            ],
+            "salsas": [
+                "mayonesa",
+                "BBQ",
+                "mostaza"
+            ],
+            "Acompañante": "Naranjada"
+        },
+        {
+            "nombre": "varsovia",
+            "Pan": "especial",
+            "Salchicha": "polaca",
+            "toppings": [
+                "tomate",
+                "cilantro",
+                "repollo"
+            ],
+            "salsas": [
+                "mayonesa",
+                "BBQ",
+                "relish"
+            ],
+            "Acompañante": "No vendemos alcohol"
+        },
+        {
+            "nombre": "fitness",
+            "Pan": "sin gluten",
+            "Salchicha": "light",
+            "toppings": [
+                "tomate",
+                "cilantro",
+                "repollo"
+            ],
+            "salsas": [],
+            "Acompañante": null
+        },
+        {
+            "nombre": "soirée",
+            "Pan": "saludable",
+            "Salchicha": "boudin",
+            "toppings": [
+                "tomate",
+                "cilantro",
+                "papitas"
+            ],
+            "salsas": [
+                "mayonesa",
+                "BBQ",
+                "mostaza"
+            ],
+            "Acompañante": "No vendemos alcohol"
+        },
+        {
+            "nombre": "coctel",
+            "Pan": "gigante",
+            "Salchicha": "vienna",
+            "toppings": [
+                "cebolla",
+                "repollo"
+            ],
+            "salsas": [
+                "ketchup",
+                "mostaza",
+                "relish"
+            ],
+            "Acompañante": null
+        },
+        {
+            "nombre": "coliseo",
+            "Pan": "submarino",
+            "Salchicha": "salicce",
+            "toppings": [
+                "tomate",
+                "cebolla",
+                "repollo",
+                "cilantro",
+                "papitas"
+            ],
+            "salsas": [
+                "ketchup"
+            ],
+            "Acompañante": "Kolita"
+        },
+        {
+            "nombre": "mama mia",
+            "Pan": "italiano",
+            "Salchicha": "francesa",
+            "toppings": [
+                "tomate",
+                "cebolla",
+                "repollo"
+            ],
+            "salsas": [
+                "ketchup"
+            ],
+            "Acompañante": "saladas pequeñas"
+        },
+        {
+            "nombre": "mi perro criollo",
+            "Pan": "simple",
+            "Salchicha": "weiner",
+            "toppings": [],
+            "salsas": [],
+            "Acompañante": null
+        },
+        {
+            "nombre": "eduardo",
+            "Pan": "simple",
+            "Salchicha": "weiner",
+            "toppings": [],
+            "salsas": [],
+            "Acompañante": null
+        }
+    ]
+}

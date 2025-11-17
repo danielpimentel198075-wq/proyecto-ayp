@@ -1,5 +1,3 @@
-# modelos.py
-
 class Ingrediente:
     """
     Representa un ingrediente (pan, salchicha, topping, salsa, acompañante, etc.).
@@ -7,9 +5,9 @@ class Ingrediente:
     def __init__(self, id_, nombre, categoria, tipo, longitud=None):
         self.id = id_
         self.nombre = nombre
-        self.categoria = categoria   # Ej: "Pan", "Salchicha", "Topping"
-        self.tipo = tipo             # Ej: "integral", "de papa", etc.
-        self.longitud = longitud     # Solo relevante para pan/salchicha
+        self.categoria = categoria  
+        self.tipo = tipo            
+        self.longitud = longitud     
 
     def __str__(self):
         return f"{self.nombre} ({self.categoria}, {self.tipo})"
@@ -22,11 +20,11 @@ class HotDog:
     def __init__(self, id_, nombre, pan, salchicha, toppings, salsas, acompanante=None):
         self.id = id_
         self.nombre = nombre
-        self.pan = pan                  # Ingrediente
-        self.salchicha = salchicha      # Ingrediente
-        self.toppings = toppings or []  # lista[Ingrediente]
-        self.salsas = salsas or []      # lista[Ingrediente]
-        self.acompanante = acompanante  # Ingrediente o None
+        self.pan = pan                  
+        self.salchicha = salchicha     
+        self.toppings = toppings or []  
+        self.salsas = salsas or []     
+        self.acompanante = acompanante  
 
     def ingredientes_totales(self):
         """
@@ -60,7 +58,7 @@ class Inventario:
     Maneja las existencias de ingredientes (por id de ingrediente).
     """
     def __init__(self):
-        # dict: {id_ingrediente: cantidad}
+        
         self.existencias = {}
 
     def obtener_cantidad(self, id_ingrediente):
@@ -84,7 +82,7 @@ class Inventario:
         """
         cantidad_actual = self.obtener_cantidad(id_ingrediente)
         if cantidad_actual < cantidad_a_restar:
-            return False # No hay suficiente stock
+            return False 
         
         self.existencias[id_ingrediente] = cantidad_actual - cantidad_a_restar
         return True
@@ -94,7 +92,7 @@ class Inventario:
         Agrega una cantidad al stock existente.
         """
         if cantidad_a_agregar < 0:
-            return False # No se puede agregar negativo
+            return False 
             
         cantidad_actual = self.obtener_cantidad(id_ingrediente)
         self.existencias[id_ingrediente] = cantidad_actual + cantidad_a_agregar

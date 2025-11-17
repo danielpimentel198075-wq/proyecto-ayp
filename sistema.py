@@ -1,6 +1,5 @@
-# sistema.py
-
 import json
+import matplotlib.pyplot as plt
 from modelos import Inventario, HotDog
 from cargador_datos import CargadorDatos
 from gestores import GestorIngredientes, GestorInventario, GestorMenu, SimuladorVentas
@@ -14,32 +13,26 @@ class SistemaHotDog:
         
         self.ARCHIVO_LOCAL = "estado_local.json" 
 
-        # 1. Cargar datos desde la API
         self.cargador = CargadorDatos(url_menu, url_ingredientes)
         ingredientes_api = self.cargador.cargar_ingredientes_desde_api()
         hotdogs_api = self.cargador.cargar_menu_desde_api(ingredientes_api)
 
-        # 2. Crear gestores
         self.gestor_ingredientes = GestorIngredientes(ingredientes_api)
         self.inventario = Inventario() 
         self.gestor_inventario = GestorInventario(self.inventario, self.gestor_ingredientes)
         
-        # IMPORTANTE: Inicia el gestor de menú VACÍO.
-        # Los hotdogs se cargarán después (de API y locales).
         self.gestor_menu = GestorMenu(self.gestor_ingredientes, self.gestor_inventario)
         
         self.simulador = SimuladorVentas(self.gestor_menu, self.gestor_inventario)
 
-        # 3. Cargar estado local (inventario y hotdogs locales)
         self.gestor_inventario.inicializar_inventario_con_cero()
         
-        # Carga el estado local (inventario Y hotdogs locales)
+
         hotdogs_locales = self.cargar_estado() 
         
-        # 4. Poblar el GestorMenu con TODOS los hotdogs (API + Locales)
-        # Primero los de la API
+
         self.gestor_menu.hotdogs.update(hotdogs_api) 
-        # Luego los locales (sobrescribirán si tienen el mismo nombre)
+    
         self.gestor_menu.hotdogs.update(hotdogs_locales)
         
         print(f"Sistema inicializado. {len(self.gestor_menu.hotdogs)} hot dogs cargados.")
@@ -54,16 +47,13 @@ class SistemaHotDog:
         try:
             with open(self.ARCHIVO_LOCAL, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                
-                # 1. Cargar Inventario
+            
                 self.inventario.existencias.update(data.get("inventario", {}))
                 print(f"Inventario cargado desde '{self.ARCHIVO_LOCAL}'.")
 
-                # 2. Cargar Hotdogs Locales
+               
                 hotdogs_data_local = data.get("hotdogs_locales", [])
                 
-                # Reconstruimos los objetos HotDog (similar a cargador_datos.py)
-                # Usamos la base de datos de ingredientes YA CARGADA en el gestor_ingredientes
                 db = self.gestor_ingredientes.ingredientes
                 
                 for item in hotdogs_data_local:
@@ -71,7 +61,6 @@ class SistemaHotDog:
                         pan = db[item["Pan"]]
                         salchicha = db[item["Salchicha"]]
                         toppings = [db[t] for t in item["toppings"]]
-                        # Manejamos 'salsas' vs 'Salsas' por si acaso
                         lista_salsas = item.get("salsas", item.get("Salsas", []))
                         salsas = [db[s] for s in lista_salsas]
                         acomp_nombre = item["Acompañante"]
@@ -102,7 +91,7 @@ class SistemaHotDog:
         Guarda el inventario y los hot dogs locales en JSON.
         """
         try:
-            # Convertimos los hot dogs a dicts serializables
+          
             hotdogs_serializados = [hd.to_dict() for hd in self.gestor_menu.hotdogs.values()]
 
             data_para_guardar = {
@@ -146,25 +135,22 @@ class SistemaHotDog:
             else:
                 print("Opción inválida, intente de nuevo.")
 
-    
+
+
     def menu_ingredientes(self):
         """
-        Muestra el submenú para la gestión de ingredientes.
+        Muestra el submenú para la consulta de ingredientes.
         """
         while True:
-            print("\n--- Gestión de Ingredientes ---")
+            print("\n--- Consulta de Ingredientes ---")
             print("1. Listar ingredientes por categoría")
             print("2. Listar ingredientes por categoría y tipo")
-            print("3. Agregar nuevo ingrediente (Próximamente)")
-            print("4. Eliminar ingrediente (Próximamente)")
             print("0. Volver al menú principal")
 
             opcion = input("Seleccione una opción: ")
 
             if opcion == "1":
-                # Pedimos la categoría al usuario
                 categoria = input("Ingrese la categoría a listar (ej: Pan, Salchicha, Salsa, toppings, Acompañante): ")
-                # Llamamos al gestor para que haga la búsqueda
                 resultados = self.gestor_ingredientes.listar_por_categoria(categoria)
                 
                 if not resultados:
@@ -172,13 +158,11 @@ class SistemaHotDog:
                 else:
                     print(f"\n--- Ingredientes en '{categoria}' ---")
                     for ing in resultados:
-                        # Esto usa el método __str__ de tu clase Ingrediente
                         print(f"- {ing}") 
             
             elif opcion == "2":
                 categoria = input("Ingrese la categoría (ej: Pan, Salchicha...): ")
                 tipo = input(f"Ingrese el tipo para '{categoria}' (ej: blanco, res, vegetal...): ")
-                # Llamamos al gestor
                 resultados = self.gestor_ingredientes.listar_por_categoria_y_tipo(categoria, tipo)
 
                 if not resultados:
@@ -188,19 +172,9 @@ class SistemaHotDog:
                     for ing in resultados:
                         print(f"- {ing}")
 
-            elif opcion == "3":
-                print("\nFunción para AGREGAR no implementada todavía.")
-                # TODO: Implementar la lógica para agregar
-                pass
-
-            elif opcion == "4":
-                print("\nFunción para ELIMINAR no implementada todavía.")
-                # TODO: Implementar la lógica para eliminar
-                pass
-
             elif opcion == "0":
                 print("Volviendo al menú principal...")
-                break # Rompe el "while True" y regresa al menú principal
+                break 
 
             else:
                 print("Opción inválida, intente de nuevo.")
@@ -247,7 +221,6 @@ class SistemaHotDog:
                         print("Error: La cantidad no puede ser negativa.")
                         continue 
 
-                    # Usamos set_existencia_total para establecer el nuevo valor
                     exito = self.gestor_inventario.set_existencia_total(id_ingrediente, nueva_cantidad)
                     
                     if exito:
@@ -267,7 +240,6 @@ class SistemaHotDog:
                         print("Error: La cantidad a agregar debe ser positiva.")
                         continue 
 
-                    # Usamos agregar_existencia para sumar al valor actual
                     exito = self.gestor_inventario.agregar_existencia(id_ingrediente, cantidad_a_agregar)
                     
                     if exito:
@@ -322,11 +294,9 @@ class SistemaHotDog:
             print("No hay hot dogs en el menú.")
             return
         
-        # Ordenamos por nombre
         hotdogs_ordenados = sorted(hotdogs, key=lambda h: h.nombre)
         
         for hd in hotdogs_ordenados:
-            # Verificamos si hay inventario para este hot dog
             hay_stock, ing_faltante = self.gestor_menu.hay_inventario_para_hotdog(hd)
             disponible = "SÍ" if hay_stock else f"NO (Falta: {ing_faltante.nombre})"
             print(f"- {hd.nombre} (Disponible: {disponible})")
@@ -343,7 +313,7 @@ class SistemaHotDog:
         print(f"  Pan: {hd.pan.nombre}")
         print(f"  Salchicha: {hd.salchicha.nombre}")
         
-        # Formatear listas
+
         toppings_str = ", ".join([t.nombre for t in hd.toppings]) or "Ninguno"
         salsas_str = ", ".join([s.nombre for s in hd.salsas]) or "Ninguna"
         acomp_str = hd.acompanante.nombre if hd.acompanante else "Ninguno"
@@ -352,7 +322,7 @@ class SistemaHotDog:
         print(f"  Salsas: {salsas_str}")
         print(f"  Acompañante: {acomp_str}")
         
-        # Validación de regla de negocio
+      
         es_valido, mensaje = self.gestor_menu.validar_hotdog(hd)
         print(f"  Validación: {'Válido' if es_valido else f'Inválido ({mensaje})'}")
 
@@ -368,14 +338,14 @@ class SistemaHotDog:
             if exito:
                 print(f"¡Éxito! Hot dog '{id_hotdog}' eliminado del menú.")
             else:
-                # Esto no debería pasar si la validación anterior funcionó
+                
                 print(f"Error: No se pudo eliminar '{id_hotdog}'.")
 
     def _menu_agregar_hotdog(self):
         print("\n--- Agregar Nuevo Hot Dog ---")
         id_hotdog = input("Ingrese el nombre (ID) para el nuevo hot dog (ej: 'especial de la casa'): ")
         
-        # --- Función auxiliar para seleccionar ingredientes ---
+       
         def seleccionar_ingrediente(categoria):
             print(f"\nSeleccionando '{categoria}'...")
             opciones = self.gestor_ingredientes.listar_por_categoria(categoria)
@@ -383,7 +353,7 @@ class SistemaHotDog:
                 print(f"Error: No hay ingredientes en la categoría '{categoria}'.")
                 return None
             
-            opciones.sort(key=lambda ing: ing.nombre) # Ordenamos alfabéticamente
+            opciones.sort(key=lambda ing: ing.nombre) 
             for i, ing in enumerate(opciones):
                 print(f"  {i+1}. {ing.nombre} (Tipo: {ing.tipo})")
             
@@ -391,22 +361,22 @@ class SistemaHotDog:
                 try:
                     sel = int(input(f"Seleccione un número (1-{len(opciones)}): "))
                     if 1 <= sel <= len(opciones):
-                        return opciones[sel-1] # Devuelve el objeto Ingrediente
+                        return opciones[sel-1] 
                     else:
                         print("Número fuera de rango.")
                 except ValueError:
                     print("Selección inválida.")
-        # --- Fin de la función auxiliar ---
+   
 
-        # 1. Seleccionar Pan
+    
         pan = seleccionar_ingrediente("Pan")
-        if not pan: return # Cancelar si no hay panes
+        if not pan: return 
 
-        # 2. Seleccionar Salchicha
+        
         salchicha = seleccionar_ingrediente("Salchicha")
         if not salchicha: return
 
-        # 3. Seleccionar Toppings (múltiples)
+       
         toppings = []
         while True:
             print(f"\nToppings actuales: {', '.join([t.nombre for t in toppings]) or 'Ninguno'}")
@@ -419,7 +389,7 @@ class SistemaHotDog:
             elif topping in toppings:
                 print(f"'{topping.nombre}' ya fue agregado.")
 
-        # 4. Seleccionar Salsas (múltiples)
+
         salsas = []
         while True:
             print(f"\nSalsas actuales: {', '.join([s.nombre for s in salsas]) or 'Ninguna'}")
@@ -432,12 +402,10 @@ class SistemaHotDog:
             elif salsa in salsas:
                 print(f"'{salsa.nombre}' ya fue agregada.")
 
-        # 5. Seleccionar Acompañante (opcional)
         acompanante = None
         if input("\n¿Desea agregar un acompañante? (s/n): ").lower() == 's':
             acompanante = seleccionar_ingrediente("Acompañante")
         
-        # 6. Crear y validar el Hot Dog
         nuevo_hotdog = HotDog(
             id_=id_hotdog,
             nombre=id_hotdog,
@@ -448,7 +416,6 @@ class SistemaHotDog:
             acompanante=acompanante
         )
 
-        # 7. Usar el gestor para agregar
         exito, mensaje = self.gestor_menu.agregar_hotdog(nuevo_hotdog)
         
         if exito:
@@ -456,9 +423,6 @@ class SistemaHotDog:
             print("Podrá verlo en la lista y será guardado al salir del programa.")
         else:
             print(f"\nERROR AL CREAR: {mensaje}")
-
-    
-    # (En sistema.py)
 
     def menu_simulacion(self):
         """
@@ -476,7 +440,6 @@ class SistemaHotDog:
 
         print(f"\nSimulando {n_clientes} clientes... ¡Esto puede tardar un momento!")
         
-        # Llamamos al simulador
         reporte = self.simulador.simular_dia(n_clientes)
         
         if not reporte:
@@ -489,18 +452,15 @@ class SistemaHotDog:
         print(f"Ventas Fallidas (por stock): {reporte['ventas_fallidas_stock']}")
         print(f"Ventas Fallidas (hot dog inválido): {reporte['ventas_fallidas_validez']}")
         print("---------------------------------")
-        
-        # --- Reporte de Hot Dogs Vendidos (Bono) ---
+   
         print("\n--- Hot Dogs Vendidos ---")
         if not reporte['hotdogs_vendidos']:
             print("No se vendió ningún hot dog.")
         else:
-            # Ordenamos por los más vendidos
             vendidos_ordenados = sorted(reporte['hotdogs_vendidos'].items(), key=lambda item: item[1], reverse=True)
             for nombre, cantidad in vendidos_ordenados:
                 print(f"- {nombre}: {cantidad} unidades")
 
-        # --- Reporte de Ingredientes Faltantes (Bono) ---
         print("\n--- Ingredientes que Faltaron (Oportunidades perdidas) ---")
         if not reporte['ingredientes_faltantes']:
             print("No faltó ningún ingrediente durante las ventas fallidas.")
@@ -511,3 +471,50 @@ class SistemaHotDog:
         
         print("\n¡Importante! El inventario ha sido actualizado.")
         print("Recuerde Guardar (Opción 0) si desea que los cambios persistan.")
+
+
+        self._mostrar_grafico_ventas(reporte)
+
+    def _mostrar_grafico_ventas(self, reporte):
+        """
+        Usa matplotlib para generar y mostrar los gráficos del reporte.
+        """
+        print("\nGenerando gráficas del reporte...")
+
+        datos_ventas = reporte['hotdogs_vendidos']
+        if not datos_ventas:
+            print("No hay datos de ventas para graficar.")
+        else:
+         
+            nombres = list(datos_ventas.keys())
+            cantidades = list(datos_ventas.values())
+
+            plt.figure(1, figsize=(10, 6)) 
+            plt.bar(nombres, cantidades, color='green')
+            plt.title('Hot Dogs Más Vendidos')
+            plt.ylabel('Cantidad Vendida')
+            plt.xlabel('Nombre del Hot Dog')
+            plt.xticks(rotation=45, ha='right') 
+            plt.tight_layout() 
+
+        datos_faltantes = reporte['ingredientes_faltantes']
+        if not datos_faltantes:
+            print("No hay datos de ingredientes faltantes para graficar.")
+        else:
+            nombres_ing = list(datos_faltantes.keys())
+            cantidades_ing = list(datos_faltantes.values())
+
+            plt.figure(2, figsize=(10, 6)) 
+            plt.bar(nombres_ing, cantidades_ing, color='red')
+            plt.title('Ingredientes Faltantes (Oportunidades Perdidas)')
+            plt.ylabel('Veces que Faltó')
+            plt.xlabel('Nombre del Ingrediente')
+            plt.xticks(rotation=45, ha='right')
+            plt.tight_layout()
+
+    
+        if datos_ventas or datos_faltantes:
+            print("Mostrando gráficas... Cierra las ventanas de las gráficas para continuar.")
+            plt.show() 
+        else:
+            print("No se generaron gráficas por falta de datos.")

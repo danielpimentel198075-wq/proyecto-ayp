@@ -1,9 +1,6 @@
-# main.py
-
 from sistema import SistemaHotDog
 
 if __name__ == "__main__":
-    # Aquí usas las URLs de tu repo en GitHub
     USERNAME = "FernandoSapient"
     REPOSITORY = "BPTSP05_2526-1"
     BRANCH = "main"
